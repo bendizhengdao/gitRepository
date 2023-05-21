@@ -1,0 +1,119 @@
+1:web容器启动时,扫描每个jar下META-INF/services//META-INF/services/javax.servlet.ServletContainerInitializer
+	加载这个文件中指定的启动类
+	
+2:Spring启动会加载WebApplicationInitializer.class下的所有组件
+
+3:为WebApplicationInitializer组件创建对象
+
+	AbstractContextLoaderInitializer:
+		创建根容器createRootApplicationContext()
+		
+	AbstractDispatcherServletInitializer:
+		创建DispatchetServlet:createDispatcherServlet()
+		创建web的ioc容器createServletApplicationContext()
+		将创建的DispatchetServlet添加到ServletContext中
+		
+	AbstractAnnotationConfigDispatcherServletInitializer:
+		创建根容器createRootApplicationContext()
+				getRootConfigClasses()传入一个配置类
+		创建web的ioc容器createServletApplicationContext()
+				getServletConfigClasses():获取配置类
+				
+将SpringMVC处理不了的请求交给tomcat,静态资源可以访问				
+	<mvc:default-servlet-handler/>
+
+将SpringMVC高级功能开启
+	<mvc:annotation-driven/>
+	
+定制SpringMvc:
+	@EnableWebMvc:开启SpringMVC定制配置功能:
+		等价于<mvc:annotation-driven/>
+		
+	implements WebMvcConfigurer
+	
+	extends WebMvcConfigurerAdapter
+	
+		@Override
+		public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+			configurer.enable();
+		}
+		等价于<mvc:default-servlet-handler/>
+		
+		@Override
+		public void addInterceptors(InterceptorRegistry registry) {
+			registry.addInterceptor(new MyInterceptor()).addPathPatterns("/**");
+		}
+		
+Spring SpringMVC整合注解开发:
+
+	/**
+	 * Spring不扫描@Controller组件
+	 * @author interface
+	 *
+	 */
+	@ComponentScan(value="com.ssm",excludeFilters={
+			@Filter(type=FilterType.ANNOTATION,classes={Controller.class})
+	})
+	public class RootConfig {
+	
+	}
+	
+	/**
+	 * SpringMVC只扫描@Controller组件
+	 * @author interface
+	 *
+	 */
+	@ComponentScan(value="com.ssm",includeFilters={
+			@Filter(type=FilterType.ANNOTATION,classes={Controller.class})
+	},useDefaultFilters=false)
+	@EnableWebMvc
+	public class AppConfig extends WebMvcConfigurerAdapter{
+	
+		@Override
+		public void configureViewResolvers(ViewResolverRegistry registry) {
+			registry.jsp("/WEB-INF/views/", ".jsp");
+		}
+		
+		@Override
+		public void addInterceptors(InterceptorRegistry registry) {
+			registry.addInterceptor(new MyInterceptor()).addPathPatterns("/**");
+		}
+	}
+	
+	/**
+	 * web容器启动时候创建对象,调用方法来初始化容器
+	 * @author interface
+	 *
+	 */
+	public class MyWebApplicationInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
+		
+		/**
+		 * 获取Spring的配置文件
+		 */
+		@Override
+		protected Class<?>[] getRootConfigClasses() {
+			// TODO Auto-generated method stub
+			return new Class<?>[]{RootConfig.class};
+		}
+		
+		/**
+		 * 获取SpringMVC的配置文件
+		 */
+		@Override
+		protected Class<?>[] getServletConfigClasses() {
+			// TODO Auto-generated method stub
+			return new Class<?>[]{AppConfig.class};
+		}
+		/**
+		 * 获取DispatcherServlet的映射信息
+		 * 
+		 *\/:拦截所有请求,包括静态资源,不包括jsp
+		 *\/*:拦截所有请求,包括静态资源,包括jsp
+		 * 
+		 */
+		@Override
+		protected String[] getServletMappings() {
+			// TODO Auto-generated method stub
+			return new String[]{"/"};
+		}
+	}
