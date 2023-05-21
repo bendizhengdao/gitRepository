@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssm.mapper.DeptMapper">
+
+<!-- 
+
+	namespace : interface 的全限定名
+
+ -->
+
+<select id="getDeptById" resultType="com.ssm.domain.Dept">
+	select * from tb_dept where id = #{did}
+</select>
+
+<resultMap type="com.ssm.domain.Dept" id="deptAndEmployeesStep"> 
+	<id property="id" column="id"/>
+	<result property="dept_name" column="deptName"/>
+	<collection property="employeesList"  select="com.ssm.mapper.EmployeesMapper.getEmpByDeptId" column="{id=id}"/>
+
+</resultMap>
+
+<select id="getDeptAndEmployeesStepById" resultMap="deptAndEmployeesStep">
+	select * from tb_dept where id = #{did}
+</select>
+
+
+<!-- 
+	collection:定义关联集合类型的属性的封装规则
+	
+	ofType:
+		指定集合里面元素的类型
+ -->
+<resultMap type="com.ssm.domain.Dept" id="deptAndEmployees"> 
+	<id property="id" column="id"/>
+	<result property="deptName" column="deptName"/>
+	<collection property="employeesList"  ofType="com.ssm.domain.Employees">
+		<id property="id" column="eid"></id>
+		<result property="lastName" column="lastName"/>
+		<result property="email" column="email"/>
+		<result property="gender" column="gender"/>
+		
+	</collection>
+
+</resultMap>
+
+<select id="getDeptAndEmployeesById" resultMap="deptAndEmployees">
+	select d.id id ,d.dept_name deptName,e.id eid,e.email email,e.gender gender,e.last_name lastName from tb_dept d left join tb_employees e on d.id=e.d_id where d.id = #{id}
+</select>
+
+</mapper>

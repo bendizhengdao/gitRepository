@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssm.mapper.EmployeesMapper">
+<!-- 
+
+	namespace : interface 的全限定名
+
+ -->
+	<!-- public Employees selectEmployees(int id); -->
+ <select id="selectEmployees" resultType="employees" databaseId="mysql" >
+ 
+ 	select * from tb_employees where id = #{id}
+ 	
+ </select>
+ 
+ 
+  <select id="selectEmployeesByNameAndEmail" resultType="employees" databaseId="mysql" >
+ 
+ 	select * from tb_employees where last_name = #{param1} and email = #{param2}
+ 	
+ </select>
+ 
+  <select id="selectEmployeesByNameAndEmail1" resultType="employees" databaseId="mysql" >
+ 
+ 	select * from tb_employees where last_name = #{lastName} and email = #{email}
+ 	
+ </select>
+ 
+ 
+ <select id="selectEmployeesByMap" resultType="employees" databaseId="mysql" >
+ 
+ 	select * from tb_employees where last_name = #{lastName} and email = #{email}
+ 	
+ </select>
+ 
+  <select id="selectEmployeesByLikeName" resultType="employees" databaseId="mysql" >
+ 
+ 	select * from tb_employees where last_name like concat('%',#{lastName},'%') 
+ 	
+ </select>
+ 
+   <select id="selectEmployeesById" resultType="map" databaseId="mysql" >
+ 		select * from tb_employees where id =#{id} 
+ 	</select>
+ 	
+   <select id="selectEmployeesByIdMap" resultType="map" databaseId="mysql" >
+ 		select * from tb_employees where last_name like #{name} 
+ 	</select>
+ 
+ <delete id="deleteEmployeesById">
+ 	delete from tb_employees where id = #{id}
+ </delete>
+ 
+ 
+  <update id="updateEmployees">
+ 	
+ 	update tb_employees set last_name = #{lastName},gender = #{gender},email=#{email} where id = #{id}
+ </update>
+  <!-- 返回mysql的自增主键策略    -->
+ <insert id="addEmployees" useGeneratedKeys="true" keyProperty="id" databaseId="mysql" >
+ 	insert into tb_employees(last_name,email,gender) values(#{lastName},#{email},#{gender})
+ </insert>
+ 
+ <!-- 返回oracle的自增主键策略    -->
+ <insert id="addEmployees"  databaseId="oracle">
+	 <selectKey keyProperty="id" order="BEFORE" resultType="Integer">
+	 	<!--   从Oracel的虚表中获取此表的自增序列的下一个值    -->
+	 	select EMPLOYEES_SEQ.nextval from dual
+	 </selectKey>
+ 	insert into tb_employees(id,last_name,email,gender) values(#{id},#{lastName},#{email},#{gender})
+ </insert>
+ 
+ 
+  <!-- 返回oracle的自增主键策略    -->
+ <insert id="addEmployees"  databaseId="oracle">
+	 <selectKey keyProperty="id" order="AFTER" resultType="Integer">
+	 	<!--   从Oracel的虚表中获取此表的自增序列的下一个值    -->
+	 	select EMPLOYEES_SEQ.currval from dual
+	 </selectKey>
+ 	insert into tb_employees(id,last_name,email,gender) values(EMPLOYEES_SEQ.nextval,#{lastName},#{email},#{gender})
+ </insert>
+</mapper>
